@@ -22,6 +22,14 @@ return new class extends Migration
             // Dua avatar terpisah
             $table->string('google_avatar')->nullable();
             $table->string('facebook_avatar')->nullable();
+
+            $table->string('github_id')->nullable();
+            $table->string('github_avatar')->nullable();
+
+            // Avatar hasil download lokal (HANYA Google)
+            $table->string('avatar_local_path')->nullable(); // <-- tambahan disini
+
+
             $table->string('last_login_provider')->nullable();
             $table->rememberToken();
             $table->timestamps();

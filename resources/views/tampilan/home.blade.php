@@ -41,13 +41,5 @@
         </div>
     </section>
 
-    <!-- ABOUT SECTION -->
-    <section id="about" class="py-5 bg-light">
-        <div class="container">
-            <h2 class="fw-bold text-center mb-4">Tentang Aplikasi</h2>
-            <p class="text-center text-muted w-75 mx-auto">
-                Aplikasi ini dibuat menggunakan Laravel dan Bootstrap 5, sehingga mudah dikembangkan dan kompatibel dengan berbagai jenis perangkat.
-            </p>
-        </div>
-    </section>
+    
 @endsection

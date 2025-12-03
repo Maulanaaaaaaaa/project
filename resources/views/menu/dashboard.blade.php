@@ -1,126 +1,88 @@
-<x-layouts.app title="Dashboard">
+<x-layouts.app title="Portofolio Ahmad Fikri">
 
-    <h2 class="fw-bold mb-4">Dashboard</h2>
+    {{-- Hero Section --}}
+    <section id="home" class="pt-5 pb-5 text-center">
+        <img src="/img/profile.jpg" class="rounded-circle shadow mb-3" width="150" alt="Profile">
 
-    <!-- ROW CARD -->
-    <div class="row g-4">
+        <h1 class="fw-bold">Hi, I'm <span class="text-primary">Ahmad Fikri</span></h1>
+        <h4 class="text-muted">Full Stack Developer 🚀</h4>
 
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Users</p>
-                            <h4 class="fw-bold">1,245</h4>
-                        </div>
-                        <div class="text-primary fs-1">
-                            <i class="bi bi-people"></i>
+        <p class="mt-3 text-secondary mx-auto" style="max-width: 550px;">
+            Membangun aplikasi modern dengan pengalaman pengguna yang intuitif dan performa backend yang solid.
+        </p>
+
+        <div class="mt-4 d-flex justify-content-center gap-3">
+            <a href="#projects" class="btn btn-primary btn-lg shadow">Lihat Proyek</a>
+            <a href="#contact" class="btn btn-outline-dark btn-lg">Hubungi Saya</a>
+        </div>
+
+        {{-- Socials --}}
+        <div class="d-flex justify-content-center gap-4 mt-4 fs-3">
+            <a href="#" class="text-dark"><i class="bi bi-github"></i></a>
+            <a href="#" class="text-primary"><i class="bi bi-linkedin"></i></a>
+            <a href="#" class="text-danger"><i class="bi bi-envelope-fill"></i></a>
+        </div>
+    </section>
+
+    {{-- Skills Section --}}
+    <section id="skills" class="py-5 bg-light text-center">
+        <h2 class="fw-bold mb-4">Technical Skills</h2>
+
+        <div class="row g-4 justify-content-center">
+            @foreach([
+                ['Laravel', 'text-danger bi-layers'],
+                ['React / Vue', 'text-primary bi-code-slash'],
+                ['MySQL / PostgreSQL', 'text-info bi-database'],
+                ['REST API', 'text-dark bi-diagram-3'],
+                ['Tailwind / Bootstrap', 'text-success bi-ui-checks'],
+            ] as $skill)
+                <div class="col-6 col-md-3">
+                    <div class="p-4 bg-white rounded shadow-sm h-100 d-flex flex-column justify-content-center">
+                        <i class="bi {{ $skill[1] }} fs-2 mb-2"></i>
+                        <strong>{{ $skill[0] }}</strong>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
+    {{-- Projects Section --}}
+    <section id="projects" class="py-5">
+        <h2 class="fw-bold text-center mb-4">Project Unggulan</h2>
+
+        <div class="row g-4 justify-content-center">
+            @foreach([
+                ['E-Commerce Dashboard', 'project1.png'],
+                ['Sistem Manajemen HR', 'project2.png'],
+                ['API Gateway Service', 'project3.png'],
+            ] as $index => $project)
+                <div class="col-md-4">
+                    <div class="card shadow-sm h-100 border-0">
+                        <img src="/img/{{ $project[1] }}" class="card-img-top" alt="{{ $project[0] }}">
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="fw-bold">{{ $project[0] }}</h5>
+                            <p class="text-muted small">Laravel + MySQL + Bootstrap</p>
+
+                            <a href="#" class="btn btn-outline-primary mt-auto">
+                                Detail Proyek
+                            </a>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endforeach
         </div>
+    </section>
 
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Orders</p>
-                            <h4 class="fw-bold">372</h4>
-                        </div>
-                        <div class="text-success fs-1">
-                            <i class="bi bi-bag-check"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    {{-- Contact Section --}}
+    <section id="contact" class="py-5 text-center bg-primary text-white">
+        <h2 class="fw-bold mb-3">Tertarik bekerja sama?</h2>
+        <p>Silakan hubungi saya melalui email atau LinkedIn</p>
 
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Revenue</p>
-                            <h4 class="fw-bold">$12,430</h4>
-                        </div>
-                        <div class="text-warning fs-1">
-                            <i class="bi bi-cash-coin"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <a href="mailto:email@anda.com" class="btn btn-light btn-lg shadow">
+            Kirim Email <i class="bi bi-envelope-fill ms-2"></i>
+        </a>
+    </section>
 
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Messages</p>
-                            <h4 class="fw-bold">87</h4>
-                        </div>
-                        <div class="text-danger fs-1">
-                            <i class="bi bi-envelope-paper"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-
-    <!-- CHART AREA -->
-    <div class="card shadow-sm border-0 mt-4">
-        <div class="card-header bg-white">
-            <h6 class="m-0 fw-bold">Statistik Mingguan</h6>
-        </div>
-        <div class="card-body">
-            <div class="text-center py-5 text-muted">
-                <i class="bi bi-graph-up-arrow fs-1"></i>
-                <p class="mt-2">Grafik akan tampil di sini</p>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- TABLE AREA -->
-    <div class="card shadow-sm border-0 mt-4">
-        <div class="card-header bg-white">
-            <h6 class="m-0 fw-bold">Aktivitas Terbaru</h6>
-        </div>
-        <div class="card-body p-0">
-
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Tanggal</th>
-                        <th>Aktivitas</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>2025-11-28</td>
-                        <td>User baru mendaftar</td>
-                        <td><span class="badge bg-success">Sukses</span></td>
-                    </tr>
-                    <tr>
-                        <td>2025-11-28</td>
-                        <td>Order #3245 dibuat</td>
-                        <td><span class="badge bg-primary">Diproses</span></td>
-                    </tr>
-                    <tr>
-                        <td>2025-11-27</td>
-                        <td>Pembayaran gagal</td>
-                        <td><span class="badge bg-danger">Gagal</span></td>
-                    </tr>
-                </tbody>
-            </table>
-
-        </div>
-    </div>
-
+    
 </x-layouts.app>

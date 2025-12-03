@@ -21,10 +21,16 @@ class User extends Authenticatable
         // Social login
         'google_id',
         'facebook_id',
+        'github_id', // <-- tambahkan
+
 
         // Avatar terpisah
         'google_avatar',
         'facebook_avatar',
+        'github_avatar', // <-- tambahkan
+
+
+        'avatar_local_path',
 
         // Tambahkan kolom baru
         'last_login_provider',
@@ -55,7 +61,6 @@ class User extends Authenticatable
      */
     public function getAvatarAttribute()
     {
-        // Cek provider login terakhir
         if ($this->last_login_provider === 'google' && !empty($this->google_avatar)) {
             return $this->google_avatar;
         }
@@ -64,7 +69,11 @@ class User extends Authenticatable
             return $this->facebook_avatar;
         }
 
-        // Fallback: Jika provider tidak dikenal, coba keduanya
+        if ($this->last_login_provider === 'github' && !empty($this->github_avatar)) {
+            return $this->github_avatar;
+        }
+
+        // Fallback jika provider tidak diketahui
         if (!empty($this->google_avatar)) {
             return $this->google_avatar;
         }
@@ -73,7 +82,11 @@ class User extends Authenticatable
             return $this->facebook_avatar;
         }
 
-        // Default avatar (ui-avatars)
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
+        if (!empty($this->github_avatar)) {
+            return $this->github_avatar;
+        }
+
+        // Default avatar
+        return asset('images/images1.png');
     }
 }

@@ -85,15 +85,16 @@
         }
 
         // 🎉 Tampilkan SweetAlert jika ada pesan sukses
-        @if (session('success'))
+        @if (session('login_name') && session('login_provider'))
             Swal.fire({
                 icon: 'success',
-                title: 'Berhasil!',
-                text: '{{ session('success') }}',
+                title: 'Login Berhasil!',
+                html: 'Halo <b>{{ session('login_name') }}</b> <span style="opacity:0.7;">({{ session('login_provider') }})</span>',
                 showConfirmButton: false,
-                timer: 2500 // Akan otomatis tertutup dalam 2.5 detik
+                timer: 2500
             });
         @endif
+
 
         // 💁‍♂️ (Opsional) Tampilkan SweetAlert jika ada pesan error
         @if (session('error'))

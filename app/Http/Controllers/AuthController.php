@@ -3,148 +3,202 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+
+
 
 class AuthController extends Controller
 {
-    /**
-     * SHOW LOGIN PAGE
-     */
+
     public function showLoginForm()
     {
         return view('tampilan.login');
     }
 
-    /**
-     * REDIRECT TO GOOGLE
-     */
+
+    // -------------------------
+    //       GOOGLE LOGIN
+    // -------------------------
+
     public function redirectToGoogle()
     {
-        // Menggunakan stateless untuk menghindari masalah sesi pada login pertama
-        return Socialite::driver('google')->stateless()->redirect();
+        return Socialite::driver('google')->redirect();
     }
 
-    /**
-     * GOOGLE CALLBACK
-     */
+    private function downloadGoogleAvatar(string $url, string $googleId): ?string
+    {
+        try {
+            // Ambil file dari URL Google
+            $response = Http::get($url);
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            // Nama file unik
+            $filename = "avatars/google/{$googleId}_" . time() . ".jpg";
+
+            // Simpan ke storage/app/public/avatars/google/
+            Storage::disk('public')->put($filename, $response->body());
+
+            // Return path untuk database
+            return "storage/" . $filename;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+
     public function handleGoogleCallback()
     {
         try {
-            // Menggunakan stateless untuk konsistensi
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            $googleUser = Socialite::driver('google')->user();
         } catch (\Exception $e) {
-            // Logging error untuk membantu debugging
-            Log::error('Google Login Error: ' . $e->getMessage());
-            return redirect()->route('login')->with('error', 'Gagal login menggunakan Google.');
+            return redirect('/login')->with('error', 'Login Google dibatalkan.');
         }
 
-        // Cek user berdasarkan google_id
-        $user = User::where('google_id', $googleUser->id)->first();
+        $avatarUrl = $googleUser->getAvatar();
 
-        if (!$user) {
-            // Jika tidak ditemukan, cek berdasarkan email
-            $user = User::where('email', $googleUser->email)->first();
+        $user = User::where('email', $googleUser->getEmail())->first();
 
-            if ($user) {
-                // Jika user ada berdasarkan email, update data Google-nya
-                $user->update([
-                    'google_id'      => $googleUser->id,
-                    'google_avatar'  => $googleUser->getAvatar(),
-                    'last_login_provider' => 'google', // Catat provider login terakhir
-                ]);
-            } else {
-                // Jika tidak ada, buat user baru
-                $user = User::create([
-                    'name'           => $googleUser->name,
-                    'email'          => $googleUser->email,
-                    'password'       => Hash::make('google_' . uniqid()),
-                    'google_id'      => $googleUser->id,
-                    'google_avatar'  => $googleUser->getAvatar(),
-                    'last_login_provider' => 'google', // Set provider awal
-                ]);
-            }
-        } else {
-            // Jika user ditemukan berdasarkan google_id, update avatar dan provider
+        $oldAvatar = $user->avatar_local_path ?? null;
+
+        $localAvatar = $this->downloadGoogleAvatar($avatarUrl, $googleUser->getId());
+
+        if ($oldAvatar && Storage::disk('public')->exists(str_replace('storage/', '', $oldAvatar))) {
+            Storage::disk('public')->delete(str_replace('storage/', '', $oldAvatar));
+        }
+
+        if ($user) {
             $user->update([
-                'google_avatar' => $googleUser->getAvatar(),
+                'google_id' => $googleUser->getId(),
+                'google_avatar' => $avatarUrl,
+                'avatar_local_path' => $localAvatar,
+                'last_login_provider' => 'google',
+            ]);
+        } else {
+            $user = User::create([
+                'name' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'google_id' => $googleUser->getId(),
+                'google_avatar' => $avatarUrl,
+                'avatar_local_path' => $localAvatar,
+                'password' => bcrypt(Str::random(32)),
                 'last_login_provider' => 'google',
             ]);
         }
 
         Auth::login($user);
-
-        return redirect('/dashboard')->with('success', 'Login Google berhasil!');
+        return redirect()->route('dashboard');
     }
 
-    /**
-     * REDIRECT TO FACEBOOK
-     */
+
+
+    // -------------------------
+    //       GITHUB LOGIN
+    // -------------------------
+
+    public function redirectToGithub()
+    {
+        return Socialite::driver('github')->redirect();
+    }
+
+    public function handleGithubCallback()
+    {
+        try {
+            $githubUser = Socialite::driver('github')->user();
+        } catch (\Exception $e) {
+            return redirect('/login')->with('error', 'Login GitHub dibatalkan.');
+        }
+
+        $avatar = $githubUser->getAvatar();
+
+        $user = User::where('email', $githubUser->getEmail())->first();
+
+        if ($user) {
+            $user->update([
+                'github_id' => $githubUser->getId(),
+                'github_avatar' => $avatar,
+                'last_login_provider' => 'github',
+            ]);
+        } else {
+            $user = User::create([
+                'name' => $githubUser->getName() ?? $githubUser->getNickname(),
+                'email' => $githubUser->getEmail(),
+                'github_id' => $githubUser->getId(),
+                'github_avatar' => $avatar,
+                'password' => bcrypt(Str::random(32)),
+                'last_login_provider' => 'github',
+            ]);
+        }
+
+        Auth::login($user);
+        return redirect()->route('dashboard');
+    }
+
+
+    // -------------------------
+    //      FACEBOOK LOGIN
+    // -------------------------
+
     public function redirectToFacebook()
     {
-        // Menggunakan stateless untuk menghindari masalah sesi
-        return Socialite::driver('facebook')->stateless()->redirect();
+        return Socialite::driver('facebook')->redirect();
     }
 
-    /**
-     * FACEBOOK CALLBACK
-     */
     public function handleFacebookCallback()
     {
         try {
-            // Menggunakan stateless untuk konsistensi
-            $fbUser = Socialite::driver('facebook')->stateless()->user();
+            // Ambil user Facebook
+            $fbUser = Socialite::driver('facebook')
+                ->stateless()
+                ->scopes(['email', 'public_profile'])
+                ->user();
         } catch (\Exception $e) {
-            // Logging error untuk membantu debugging
-            Log::error('Facebook Login Error: ' . $e->getMessage());
-            return redirect()->route('login')->with('error', 'Gagal login menggunakan Facebook.');
+            // User menekan CANCEL atau terjadi error OAuth
+            return redirect('/login')->with('error', 'Login Facebook dibatalkan.');
         }
 
-        // Email fallback jika Facebook tidak menyediakannya
-        $email = $fbUser->email ?? "fb_{$fbUser->id}@facebook.local";
-        // Avatar fallback
-        $avatar = $fbUser->avatar_original ?? $fbUser->avatar ?? null;
+        // Ambil avatar besar
+        $avatar = $fbUser->avatar_original ?? $fbUser->getAvatar();
 
-        // Cek user berdasarkan facebook_id
-        $user = User::where('facebook_id', $fbUser->id)->first();
+        // Email fallback jika tidak ada email dari Facebook
+        $email = $fbUser->getEmail() ?? "fb_{$fbUser->getId()}@facebook.local";
 
-        if (!$user) {
-            // Jika tidak ditemukan, cek berdasarkan email
-            $user = User::where('email', $email)->first();
+        // Cari user lama
+        $user = User::where('email', $email)->first();
 
-            if ($user) {
-                // Jika user ada berdasarkan email, update data Facebook-nya
-                $user->update([
-                    'facebook_id'     => $fbUser->id,
-                    'facebook_avatar' => $avatar,
-                    'last_login_provider' => 'facebook', // Catat provider login terakhir
-                ]);
-            } else {
-                // Jika tidak ada, buat user baru
-                $user = User::create([
-                    'name'            => $fbUser->name,
-                    'email'           => $email,
-                    'password'        => Hash::make('facebook_' . uniqid()),
-                    'facebook_id'     => $fbUser->id,
-                    'facebook_avatar' => $avatar,
-                    'last_login_provider' => 'facebook', // Set provider awal
-                ]);
-            }
-        } else {
-            // Jika user ditemukan berdasarkan facebook_id, update avatar dan provider
+        if ($user) {
             $user->update([
+                'facebook_id' => $fbUser->getId(),
                 'facebook_avatar' => $avatar,
+                'last_login_provider' => 'facebook',
+            ]);
+        } else {
+            $user = User::create([
+                'name' => $fbUser->getName(),
+                'email' => $email,
+                'facebook_id' => $fbUser->getId(),
+                'facebook_avatar' => $avatar,
+                'google_id' => null,
+                'google_avatar' => null,
+                'github_id' => null,
+                'github_avatar' => null,
+                'password' => bcrypt(Str::random(32)),
                 'last_login_provider' => 'facebook',
             ]);
         }
 
         Auth::login($user);
 
-        return redirect('/dashboard')->with('success', 'Login Facebook berhasil!');
+        return redirect()->route('dashboard');
     }
+
 
     /**
      * LOGOUT

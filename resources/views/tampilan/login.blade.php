@@ -8,7 +8,7 @@
 
         {{-- Logo --}}
         <div class="mb-4">
-            <h3 class="fw-bold">Welcome Back</h3>
+            <h3 class="fw-bold">Login or Sign Up</h3>
             <p class="text-muted">Login to continue</p>
         </div>
 
@@ -21,9 +21,16 @@
 
         {{-- Facebook Login --}}
         <a href="{{ route('facebook.redirect') }}" 
-           class="btn btn-facebook w-100 shadow-sm py-2">
+           class="btn btn-facebook w-100 shadow-sm py-2 mb-3">
             <img src="https://www.svgrepo.com/show/448224/facebook.svg" width="22" class="me-2">
             Continue with Facebook
+        </a>
+
+        {{-- GitHub Login --}}
+        <a href="{{ route('github.redirect') }}" 
+           class="btn btn-github w-100 shadow-sm py-2">
+            <img src="https://www.svgrepo.com/show/512317/github-142.svg" width="22" class="me-2">
+            Continue with GitHub
         </a>
 
         {{-- Error --}}
@@ -47,16 +54,23 @@
         border: 1px solid #eee;
     }
 
-    .btn-google, .btn-facebook {
+    .btn-google, 
+    .btn-facebook,
+    .btn-github {
         background: #fff;
         border: 1px solid #ddd;
         border-radius: 10px;
         font-size: 16px;
         font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
     }
 
     .btn-google:hover,
-    .btn-facebook:hover {
+    .btn-facebook:hover,
+    .btn-github:hover {
         background: #f9f9f9;
         border-color: #ccc;
     }
